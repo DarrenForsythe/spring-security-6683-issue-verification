@@ -18,11 +18,13 @@ package sample;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author Joe Grandja
  */
 @SpringBootApplication
+@EnableScheduling
 public class OAuth2WebClientApplication {
 
 	public static void main(String[] args) {

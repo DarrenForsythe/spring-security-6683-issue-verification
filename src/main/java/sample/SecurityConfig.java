@@ -13,11 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package sample.config;
+package sample;
 
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.time.Instant;
+import java.util.Collections;
 
 /**
  * @author Joe Grandja
@@ -27,7 +32,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .oauth2Client();
+        http.authorizeRequests().anyRequest().authenticated().and()
+                .oauth2Client().and().oauth2ResourceServer().jwt().decoder(s -> {
+            if (s.equals("test-token")) {
+                return new Jwt(s, Instant.MIN, Instant.MAX, Collections.singletonMap("aud", "test-client"), Collections.singletonMap("scope", "test-auth"));
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }).jwtAuthenticationConverter(jwt ->
+                new TestingAuthenticationToken("test", "test", "test-auth"));
     }
 }

@@ -9,10 +9,12 @@ spring:
     oauth2:
       client:
         registration:
-            mock:
-            client-id: test-id
+          mock:
+            client-id: test
             client-secret: secret
-            provider: mock
             scopes: read
+            authorization-grant-type: client_credentials
         provider:
           mock:
+            token-uri: ${mockwebserver.url}/oauth/token
+
