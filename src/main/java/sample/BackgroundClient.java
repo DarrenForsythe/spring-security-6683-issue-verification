@@ -22,6 +22,8 @@ public class BackgroundClient {
 
     private WebClient webClient;
 
+
+
     public BackgroundClient(WebClient.Builder webClient, ClientRegistrationRepository clientRegistrationRepository) {
         //ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 = getAnonHttpServlet(clientRegistrationRepository);
         ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 = getNoOpOauth2(clientRegistrationRepository);
@@ -55,10 +57,10 @@ public class BackgroundClient {
                 new HttpSessionOAuth2AuthorizedClientRepository());
     }
 
-
     @Scheduled(fixedRate = 10000L)
     public void callApi() {
         String response = webClient.get().retrieve().bodyToMono(String.class).block();
         LOGGER.info("Got Response - {}", response);
     }
+
 }
