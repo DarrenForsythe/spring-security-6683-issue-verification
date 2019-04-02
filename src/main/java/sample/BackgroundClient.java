@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,14 @@ public class BackgroundClient {
     private WebClient webClient;
 
     public BackgroundClient(WebClient.Builder webClient, ClientRegistrationRepository clientRegistrationRepository) {
-        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 = new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+        //ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 = getAnonHttpServlet(clientRegistrationRepository);
+        ServletOAuth2AuthorizedClientExchangeFilterFunction oauth2 = getNoOpOauth2(clientRegistrationRepository);
+        oauth2.setDefaultClientRegistrationId("mock");
+        this.webClient = webClient.baseUrl("http://localhost:8080/").apply(oauth2.oauth2Configuration()).build();
+    }
+
+    private ServletOAuth2AuthorizedClientExchangeFilterFunction getNoOpOauth2(ClientRegistrationRepository clientRegistrationRepository) {
+        return new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
                 new OAuth2AuthorizedClientRepository() {
                     @Override
                     public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(String s, Authentication authentication, HttpServletRequest httpServletRequest) {
@@ -40,8 +48,11 @@ public class BackgroundClient {
                         LOGGER.info("Remove client called with args - {}, {}", s, authentication);
                     }
                 });
-        oauth2.setDefaultClientRegistrationId("mock");
-        this.webClient = webClient.baseUrl("http://localhost:8080/").apply(oauth2.oauth2Configuration()).build();
+    }
+
+    private ServletOAuth2AuthorizedClientExchangeFilterFunction getAnonHttpServlet(ClientRegistrationRepository clientRegistrationRepository) {
+        return new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientRegistrationRepository,
+                new HttpSessionOAuth2AuthorizedClientRepository());
     }
 
 
